@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/features/assessment/pages/assignment_page.dart';
 import 'package:flutter_application_2/features/home/pages/home_page.dart';
 import 'package:flutter_application_2/features/quitionaire/pages/questionnaire_page.dart';
 import '../../features/auth/services/auth_storage.dart';
@@ -38,7 +39,7 @@ class _MainNavigationState extends State<MainNavigation> {
     if (role == UserRole.guru) {
       tempPages = [
         const DashboardPage(),
-        const QuestionnairePage(),
+        const AssignmentPage(),
         const ProfilePage(),
       ];
 

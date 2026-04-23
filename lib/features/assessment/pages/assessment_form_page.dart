@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../auth/pages/login_page.dart';
-import '../../auth/services/auth_storage.dart';
+import 'package:flutter_application_2/features/assessment/models/assignment_model.dart';
 import '../../quitionaire/models/questionnaire_model.dart';
 import '../models/criteria_model.dart';
 import '../services/criteria_service.dart';
@@ -20,7 +19,7 @@ class _AssessmentFormPageState extends State<AssessmentFormPage> {
   Map<int, int> scores = {}; // id -> nilai
   final _formKey = GlobalKey<FormState>();
 
-  List<QuestionnaireModel> data = [];
+  List<Questionnaire> data = [];
   Map<int, TextEditingController> controllers = {};
 
 
@@ -100,7 +99,7 @@ class _AssessmentFormPageState extends State<AssessmentFormPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Form Penilaian'), actions: [ MaterialButton(onPressed: logout(context), child: const Text('Logout'),)],),
+      appBar: AppBar(title: const Text('Form Penilaian')), 
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -132,16 +131,5 @@ class _AssessmentFormPageState extends State<AssessmentFormPage> {
     );
   }
 
-  logout(context) {
-    return () async {
-      final authStorage = AuthStorage();
-      await authStorage.clear();
-  
-      // kembali ke login page
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
-    };
-  }
+ 
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../assessment/services/assessment_service.dart';
 import '../models/questionnaire_model.dart';
 import '../services/questionnaire_service.dart';
+import '../../assessment/services/assessment_service.dart';
+import '../widgets/question_item.dart';
 
 class QuestionnairePage extends StatefulWidget {
   const QuestionnairePage({super.key});
@@ -11,166 +12,152 @@ class QuestionnairePage extends StatefulWidget {
 }
 
 class _QuestionnairePageState extends State<QuestionnairePage> {
-  final _formKey = GlobalKey<FormState>();
 
-  List<QuestionnaireModel> data = [];
-  Map<int, TextEditingController> controllers = {};
+  final QuestionnaireService _service = QuestionnaireService();
+  final AssessmentService _submitService = AssessmentService();
+
+  List<Questionnaire> questions = [];
+  Map<int, int> answers = {}; // questionId -> score
 
   bool isLoading = true;
+  bool isSubmitting = false;
+
+  String date = '';
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    date = ModalRoute.of(context)!.settings.arguments as String;
+
     fetchData();
   }
 
   Future<void> fetchData() async {
-    final result = await QuestionnaireService().getMyQuestionnaires();
-
-    for (var q in result) {
-      controllers[q.id] = TextEditingController();
-    }
+    final data = await _service.getByDate(date);
 
     setState(() {
-      data = result;
+      questions = data;
       isLoading = false;
     });
   }
 
-  void submit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    List<Map<String, dynamic>> details = [];
-
-    for (var q in data) {
-      final value = int.tryParse(controllers[q.id]!.text) ?? 0;
-
-      details.add({
-        "questionnaire_id": q.id,
-        "score": value,
-      });
-    }
-
-    // print("details: $details");
-
-    await AssessmentService().submit(details);
-
-    // ignore: use_build_context_synchronously
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Berhasil submit')),
-    );
-
-    // Navigator.pop(context);
+  void onAnswer(int id, int value) {
+    setState(() {
+      answers[id] = value;
+    });
   }
 
-  Color getTypeColor(String type) {
-    return type == 'positive' ? Colors.green : Colors.red;
+  Future<void> submit() async {
+    if (answers.length != questions.length) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Semua pertanyaan harus diisi')),
+      );
+      return;
+    }
+
+    setState(() => isSubmitting = true);
+
+    final details = answers.entries.map((e) {
+      return {
+        "criteria_id": e.key,
+        "score": e.value,
+      };
+    }).toList();
+
+    final success = await _submitService.submit(details);
+
+    setState(() => isSubmitting = false);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Berhasil submit')),
+      );
+
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal submit')),
+      );
+    }
+  }
+
+  Map<String, List<Questionnaire>> grouped() {
+    final Map<String, List<Questionnaire>> data = {};
+
+    for (var q in questions) {
+      data.putIfAbsent(q.category, () => []);
+      data[q.category]!.add(q);
+    }
+
+    return data;
   }
 
   @override
   Widget build(BuildContext context) {
+
+    final groupedData = grouped();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Self Assessment'),
+        title: Text('Isi Assessment'),
       ),
 
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: Column(
-                children: [
+          : Column(
+              children: [
 
-                  /// LIST
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: data.length,
-                      itemBuilder: (context, index) {
-                        final q = data[index];
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.all(12),
+                    children: groupedData.entries.map((entry) {
 
-                        return Card(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
 
-                                /// TITLE
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        q.name,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-
-                                    /// TYPE BADGE
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: getTypeColor(q.type),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        q.type,
-                                        style: const TextStyle(
-                                            color: Colors.white, fontSize: 12),
-                                      ),
-                                    )
-                                  ],
-                                ),
-
-                                const SizedBox(height: 10),
-
-                                /// INPUT SCORE
-                                TextFormField(
-                                  controller: controllers[q.id],
-                                  keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Nilai (1 - 5)',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Wajib diisi';
-                                    }
-
-                                    final val = int.tryParse(value);
-                                    if (val == null || val < 1 || val > 5) {
-                                      return 'Nilai 1 - 5';
-                                    }
-
-                                    return null;
-                                  },
-                                ),
-                              ],
+                          // CATEGORY
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Text(
+                              entry.key,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        );
-                      },
+
+                          // QUESTIONS
+                          ...entry.value.map((q) {
+                            return QuestionItem(
+                              question: q.question,
+                              value: answers[q.id],
+                              onChanged: (val) => onAnswer(q.id, val),
+                            );
+                          })
+
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                // SUBMIT BUTTON
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isSubmitting ? null : submit,
+                      child: isSubmitting
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text('Submit'),
                     ),
                   ),
-
-                  /// BUTTON
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: submit,
-                        child: const Text('Submit Penilaian'),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                )
+              ],
             ),
     );
   }

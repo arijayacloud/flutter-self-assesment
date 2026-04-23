@@ -1,22 +1,22 @@
-class QuestionnaireModel {
+class Questionnaire {
   final int id;
-  final String name;
-  final String type;
+  final String question;
+  final String category;
   final int weight;
 
-  QuestionnaireModel({
+  Questionnaire({
     required this.id,
-    required this.name,
-    required this.type,
+    required this.question,
+    required this.category,
     required this.weight,
   });
 
-  factory QuestionnaireModel.fromJson(Map<String, dynamic> json) {
-    return QuestionnaireModel(
+  factory Questionnaire.fromJson(Map<String, dynamic> json) {
+    return Questionnaire(
       id: json['id'],
-      name: json['name'],
-      type: json['type'],
-      weight: json['weight'],
+      question: json['name'],
+      category: json['category_id'].toString(),
+      weight: json['weight'] ?? 1,
     );
   }
 }

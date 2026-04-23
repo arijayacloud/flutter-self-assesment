@@ -1,14 +1,29 @@
-import '../models/questionnaire_model.dart';
+import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
+import '../models/questionnaire_model.dart';
 
 class QuestionnaireService {
-  Future<List<QuestionnaireModel>> getMyQuestionnaires() async {
-    await ApiClient.setToken();
+  final Dio _dio = ApiClient.dio;
 
-    final res = await ApiClient.dio.get('/my-questionnaires');
+  Future<List<Questionnaire>> getByDate(String date) async {
+    try {
+      await ApiClient.setToken();
 
-    return (res.data as List)
-        .map((e) => QuestionnaireModel.fromJson(e))
-        .toList();
+      final response = await _dio.get(
+        '/my-questionnaires',
+        queryParameters: {'date': date},
+      );
+  print(    'Response questionnaires: ${response.data}'); // Debug print
+      if (response.statusCode == 200) {
+        return (response.data as List)
+            .map((e) => Questionnaire.fromJson(e))
+            .toList();
+      }
+
+      return [];
+    } catch (e) {
+      print('Get Questionnaire Error: $e');
+      return [];
+    }
   }
 }

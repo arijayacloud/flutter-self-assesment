@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'core/navigation/main_navigation.dart';
+import 'features/assessment/pages/assignment_page.dart';
 import 'features/auth/services/auth_storage.dart';
 import 'features/auth/pages/login_page.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+import 'features/quitionaire/pages/questionnaire_page.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await initializeDateFormatting('id_ID', null);
+
   runApp(const MyApp());
 }
 
@@ -53,6 +61,10 @@ class MyApp extends StatelessWidget {
           return snapshot.data!;
         },
       ),
+      routes: {
+        '/assignment': (context) => const AssignmentPage(),
+        '/questionnaire': (context) => const QuestionnairePage(),
+      },
     );
   }
 }
