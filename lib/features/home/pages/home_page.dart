@@ -82,7 +82,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                         child: Text(
                           status,
-                          style: const TextStyle(color: Colors.white),
                         ),
                       ),
                     ),
@@ -92,8 +91,9 @@ class _HomePageState extends State<HomePage> {
 
                   /// SCORE CARD
                   Card(
+                    
                     child: ListTile(
-                      title: const Text('Nilai Terakhir'),
+                      title: const Text('Nilai Terakhir', style: TextStyle(color: Colors.black),),
                       subtitle: Text(lastScore.toString()),
                       trailing: const Icon(Icons.bar_chart),
                     ),

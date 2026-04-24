@@ -15,7 +15,7 @@ class Questionnaire {
     return Questionnaire(
       id: json['id'],
       question: json['name'],
-      category: json['category_id'].toString(),
+      category: json['category'].toString(),
       weight: json['weight'] ?? 1,
     );
   }

@@ -10,10 +10,10 @@ class QuestionnaireService {
       await ApiClient.setToken();
 
       final response = await _dio.get(
-        '/my-questionnaires',
-        queryParameters: {'date': date},
+        '/my-questionnaires?date=$date',
+        // queryParameters: {'date': date},
       );
-  print(    'Response questionnaires: ${response.data}'); // Debug print
+  print(    'Response questionnaires: ${date}'); // Debug print
       if (response.statusCode == 200) {
         return (response.data as List)
             .map((e) => Questionnaire.fromJson(e))

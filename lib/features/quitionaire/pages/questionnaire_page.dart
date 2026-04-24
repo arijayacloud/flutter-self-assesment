@@ -60,7 +60,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
 
     final details = answers.entries.map((e) {
       return {
-        "criteria_id": e.key,
+        "questionnaire_id": e.key,
         "score": e.value,
       };
     }).toList();
