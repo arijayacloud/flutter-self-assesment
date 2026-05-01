@@ -33,26 +33,24 @@ class _LoginPageState extends State<LoginPage> {
       await authStorage.saveToken(token);
       await authStorage.saveUser(user);
 
-      // final role = user['role'];
+      final role = user['role'];
 
-      Navigator.pushReplacement(
+     
+
+      if (role == UserRole.guru) {
+        Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MainNavigation()),
       );
+      } else if (role == UserRole.kepsek || role == UserRole.admin) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Aplikasi Khusus Guru dan Karyawan')),
+        );
+      } else {
+        throw Exception('Role tidak dikenali');
+      }
 
-      // if (role == UserRole.guru) {
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (_) => const AssessmentFormPage()),
-      //   );
-      // } else if (role == UserRole.kepsek || role == UserRole.admin) {
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (_) => const DashboardPage()),
-      //   );
-      // } else {
-      //   throw Exception('Role tidak dikenali');
-      // }
+       
     } catch (e) {
       ScaffoldMessenger.of(
         context,

@@ -4,7 +4,7 @@ import '../../features/auth/services/auth_storage.dart';
 class ApiClient {
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: 'http://127.0.0.1:8000/api', // emulator Android
+      baseUrl: 'https://self-assessment.arijayasoftwarehouse.online/api', // emulator Android
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       headers: {
